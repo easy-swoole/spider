@@ -1,0 +1,19 @@
+{
+    "name": "easyswoole/spider",
+    "type": "library",
+    "require": {
+        "easyswoole/easyswoole": "2.x-dev"
+    },
+    "authors": [
+        {
+            "name": "YF",
+            "email": "291323003@qq.com"
+        }
+    ],
+    "license" : "Apache-2.0",
+    "autoload": {
+        "psr-4": {
+            "EasySwoole\\Spider\\": "src/"
+        }
+    }
+}
