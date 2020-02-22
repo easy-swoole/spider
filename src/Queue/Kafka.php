@@ -5,9 +5,9 @@
  * @Copyright:    copyright(2020) Easyswoole all rights reserved
  * @Description:  kafka
  */
-namespace Easyswoole\Spider\Queue;
+namespace EasySwoole\Spider\Queue;
 
-use Easyswoole\Spider\Hole\QueueInterface;
+use EasySwoole\Spider\Hole\QueueInterface;
 
 class Kafka implements QueueInterface
 {

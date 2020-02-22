@@ -5,17 +5,17 @@
  * @Copyright:    copyright(2020) Easyswoole all rights reserved
  * @Description:
  */
-namespace Spider;
+namespace EasySwoole\Spider;
 
 use EasySwoole\Component\Singleton;
 use EasySwoole\FastCache\Cache;
 use EasySwoole\Redis\Config\RedisConfig;
 use EasySwoole\RedisPool\Redis;
-use Easyswoole\Spider\Config\Config;
-use Easyswoole\Spider\Process\ConsumeProcess;
-use Easyswoole\Spider\Process\ProductProcess;
-use Easyswoole\Spider\Queue\FastCacheQueue;
-use Easyswoole\Spider\Queue\RedisQueue;
+use EasySwoole\Spider\Config\Config;
+use EasySwoole\Spider\Process\ConsumeProcess;
+use EasySwoole\Spider\Process\ProductProcess;
+use EasySwoole\Spider\Queue\FastCacheQueue;
+use EasySwoole\Spider\Queue\RedisQueue;
 
 class Spider
 {

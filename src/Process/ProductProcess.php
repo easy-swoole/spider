@@ -5,11 +5,11 @@
  * @Copyright:    copyright(2020) Easyswoole all rights reserved
  * @Description:  生产者进程
  */
-namespace Easyswoole\Spider\Process;
+namespace EasySwoole\Spider\Process;
 
 use EasySwoole\Component\Process\AbstractProcess;
-use Easyswoole\Spider\Config\Config;
-use Easyswoole\Spider\Config\ProductResult;
+use EasySwoole\Spider\Config\Config;
+use EasySwoole\Spider\Config\ProductResult;
 use Swoole\Coroutine;
 
 class ProductProcess extends AbstractProcess
@@ -26,7 +26,6 @@ class ProductProcess extends AbstractProcess
             $mainHost = $config->getMainHost();
             if (empty($mainHost)) {
                 $config->getQueue()->push($config->getProductQueueKey(), $config->getStartUrl());
-                $config->getQueue()->pop($config->getProductQueueKey());
             } else {
                 $ip = gethostbyname(gethostname());
                 if (!empty($ip) && $config->getMainHost() === $ip) {

@@ -5,10 +5,10 @@
  * @Copyright:    copyright(2020) Easyswoole all rights reserved
  * @Description:  爬虫组件默认fastcache为通信队列
  */
-namespace Easyswoole\Spider\Queue;
+namespace EasySwoole\Spider\Queue;
 
 use EasySwoole\FastCache\Cache;
-use Easyswoole\Spider\Hole\QueueInterface;
+use EasySwoole\Spider\Hole\QueueInterface;
 
 class FastCacheQueue implements QueueInterface
 {

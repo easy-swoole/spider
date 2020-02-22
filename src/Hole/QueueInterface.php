@@ -5,7 +5,7 @@
  * @Copyright:    copyright(2020) Easyswoole all rights reserved
  * @Description:  暴露给外部的队列接口
  */
-namespace Easyswoole\Spider\Hole;
+namespace EasySwoole\Spider\Hole;
 
 interface QueueInterface
 {

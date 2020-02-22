@@ -5,10 +5,10 @@
  * @Copyright:    copyright(2020) Easyswoole all rights reserved
  * @Description:  消费者进程
  */
-namespace Easyswoole\Spider\Process;
+namespace EasySwoole\Spider\Process;
 
 use EasySwoole\Component\Process\AbstractProcess;
-use Easyswoole\Spider\Config\Config;
+use EasySwoole\Spider\Config\Config;
 use Swoole\Coroutine;
 
 class ConsumeProcess extends AbstractProcess

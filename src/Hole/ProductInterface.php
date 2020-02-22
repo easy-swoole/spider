@@ -5,9 +5,9 @@
  * @Copyright:    copyright(2020) Easyswoole all rights reserved
  * @Description:  暴露给外部的生产者接口
  */
-namespace Easyswoole\Spider\Hole;
+namespace EasySwoole\Spider\Hole;
 
-use Easyswoole\Spider\Config\ProductResult;
+use EasySwoole\Spider\Config\ProductResult;
 
 interface ProductInterface
 {

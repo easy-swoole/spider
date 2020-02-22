@@ -5,10 +5,10 @@
  * @Copyright:    copyright(2020) Easyswoole all rights reserved
  * @Description:  基于redis-pool
  */
-namespace Easyswoole\Spider\Queue;
+namespace EasySwoole\Spider\Queue;
 
 use EasySwoole\RedisPool\Redis;
-use Easyswoole\Spider\Hole\QueueInterface;
+use EasySwoole\Spider\Hole\QueueInterface;
 
 class RedisQueue implements QueueInterface
 {

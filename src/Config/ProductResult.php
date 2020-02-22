@@ -5,7 +5,7 @@
  * @Copyright:    copyright(2020) Easyswoole all rights reserved
  * @Description:  生产结果
  */
-namespace Easyswoole\Spider\Config;
+namespace EasySwoole\Spider\Config;
 
 class ProductResult
 {

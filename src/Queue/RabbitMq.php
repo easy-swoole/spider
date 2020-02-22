@@ -5,9 +5,9 @@
  * @Copyright:    copyright(2020) Easyswoole all rights reserved
  * @Description:  RabbitMq
  */
-namespace Easyswoole\Spider\Queue;
+namespace EasySwoole\Spider\Queue;
 
-use Easyswoole\Spider\Hole\QueueInterface;
+use EasySwoole\Spider\Hole\QueueInterface;
 
 class RabbitMq implements QueueInterface
 {

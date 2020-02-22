@@ -12,9 +12,9 @@ EasySwoole-Spider 可以方便用户快速搭建分布式多协程爬虫。
 namespace App\Spider;
 
 use EasySwoole\HttpClient\HttpClient;
-use Easyswoole\Spider\Hole\ProductInterface;
-use Easyswoole\Spider\Spider;
-use Easyswoole\Spider\Config\ProductResult;
+use EasySwoole\Spider\Hole\ProductInterface;
+use EasySwoole\Spider\Spider;
+use EasySwoole\Spider\Config\ProductResult;
 
 class ProductTest implements ProductInterface
 {
@@ -41,7 +41,7 @@ class ProductTest implements ProductInterface
 ```php
 namespace App\Spider;
 
-use Easyswoole\Spider\Hole\ConsumeInterface;
+use EasySwoole\Spider\Hole\ConsumeInterface;
 
 class ConsumeTest implements ConsumeInterface
 {

@@ -5,12 +5,12 @@
  * @Copyright:    copyright(2020) Easyswoole all rights reserved
  * @Description:  爬虫配置
  */
-namespace Easyswoole\Spider\Config;
+namespace EasySwoole\Spider\Config;
 
 use EasySwoole\Component\Singleton;
-use Easyswoole\Spider\Hole\ConsumeInterface;
-use Easyswoole\Spider\Hole\ProductInterface;
-use Easyswoole\Spider\Hole\QueueInterface;
+use EasySwoole\Spider\Hole\ConsumeInterface;
+use EasySwoole\Spider\Hole\ProductInterface;
+use EasySwoole\Spider\Hole\QueueInterface;
 
 class Config
 {
