@@ -47,7 +47,7 @@ class ProductProcess extends AbstractProcess
                         if ($productResult instanceof ProductResult) {
 
                             $nextUrls = $productResult->getNextUrls();
-                            if (!empty($nextUrl)) {
+                            if (!empty($nextUrls)) {
                                 foreach ($nextUrls as $nextUrl) {
                                     Config::getInstance()->getQueue()->push($config->getProductQueueKey(), $nextUrl);
                                 }
