@@ -1,38 +1,91 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: yf
- * Date: 2018/2/11
- * Time: 下午8:04
+ * @CreateTime:   2020/2/16 下午10:24
+ * @Author:       huizhang  <tuzisir@163.com>
+ * @Copyright:    copyright(2020) Easyswoole all rights reserved
+ * @Description:
  */
+namespace Spider;
 
-namespace EasySwoole\Spider;
-
-
-use EasySwoole\Core\AbstractInterface\Singleton;
-use EasySwoole\Core\Component\Trigger;
-use EasySwoole\Core\Swoole\Process\ProcessManager;
-use EasySwoole\Spider\Task\Runner;
+use EasySwoole\Component\Singleton;
+use EasySwoole\FastCache\Cache;
+use EasySwoole\Redis\Config\RedisConfig;
+use EasySwoole\RedisPool\Redis;
+use Easyswoole\Spider\Config\Config;
+use Easyswoole\Spider\Process\ConsumeProcess;
+use Easyswoole\Spider\Process\ProductProcess;
+use Easyswoole\Spider\Queue\FastCacheQueue;
+use Easyswoole\Spider\Queue\RedisQueue;
 
 class Spider
 {
+
     use Singleton;
 
-    function __construct(callable $preCall = null)
+    /**
+     * @var $config Config
+     */
+    private $config;
+
+    /**
+     * 设置配置
+     *
+     * @param Config $config
+     * CreateTime: 2020/2/22 下午3:46
+     * @return Spider
+     */
+    public function setConfig(Config $config) : Spider
     {
-        if(is_callable($preCall)){
-            try{
-                call_user_func($preCall);
-            }catch (\Throwable $throwable){
-                Trigger::throwable($throwable);
-            }
-        }
+        $this->config = $config;
+        return $this;
     }
 
-    function run(int $processNum = 1)
+    /**
+     * 将进程绑定到swooleserver
+     *
+     * @param null|\swoole_server|\swoole_server_port|\swoole_websocket_server|\swoole_http_server $swooleServer
+     * CreateTime: 2020/2/22 下午2:45
+     * @return Spider
+     */
+    public function attachProcess($swooleServer)
     {
-        for($i = 1;$i <= $processNum;$i++){
-            ProcessManager::getInstance()->addProcess("__Spider{$i}",Runner::class);
+
+        // 队列
+        try {
+            switch ($this->config->getQueueType()) {
+                case Config::QUEUE_TYPE_FAST_CACHE:
+                    Cache::getInstance()
+                        ->setTempDir(EASYSWOOLE_TEMP_DIR)
+                        ->attachToServer($swooleServer);
+                    $this->config->setQueue(new FastCacheQueue());
+                    break;
+                case Config::QUEUE_TYPE_REDIS:
+                    $queueConfig =  $this->config->getQueueConfig();
+                    if (empty($config)) {
+                        $queueConfig = new RedisConfig();
+                    }
+                    Redis::getInstance()->register(RedisQueue::REDIS_ALIAS, $queueConfig);
+                    $this->config->setQueue(new RedisQueue());
+                    break;
+                case Config::QUEUE_TYPE_RABBITMQ:
+
+                    break;
+                case Config::QUEUE_TYPE_KAFKA:
+
+                    break;
+                default:
+            }
+        } catch (\Exception $e) {
+
         }
+
+        // 生产者进程
+        $swooleServer->addProcess((new ProductProcess())->getProcess());
+
+        // 消费者进程
+        $swooleServer->addProcess((new ConsumeProcess())->getProcess());
+
     }
+
 }
+
