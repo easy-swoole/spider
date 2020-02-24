@@ -1,19 +1,37 @@
 {
-    "name": "easyswoole/spider",
-    "type": "library",
-    "require": {
-        "easyswoole/easyswoole": "2.x-dev"
-    },
-    "authors": [
-        {
-            "name": "YF",
-            "email": "291323003@qq.com"
-        }
-    ],
-    "license" : "Apache-2.0",
-    "autoload": {
-        "psr-4": {
-            "EasySwoole\\Spider\\": "src/"
-        }
+  "name": "easyswoole/spider",
+  "type": "library",
+  "description": "An efficient swoole framework",
+  "keywords": [
+    "swoole",
+    "framework",
+    "spider",
+    "easyswoole"
+  ],
+  "homepage": "https://www.easyswoole.com/",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Huizhang",
+      "email": "2788828128@qq.com"
     }
+  ],
+  "require": {
+    "php": ">=7.1.0",
+    "easyswoole/component": "^2.0"
+  },
+  "require-dev": {
+    "easyswoole/phpunit": "^1.0",
+    "easyswoole/swoole-ide-helper": "^1.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "EasySwoole\\Spider\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "EasySwoole\\Spider\\Test\\": "test/"
+    }
+  }
 }
