@@ -3,59 +3,129 @@
 EasySwoole-Spider 可以方便用户快速搭建分布式多协程爬虫。
 
 ## 快速使用
+以百度搜索为例，根据搜索关键词找出爬出每个关键词检索结果前三页的特定数据
+`纯属教学目的，如有冒犯贵公司还请及时通知，会及时调整`
 
 #### Product
 
-实现ProductInterface接口
-
 ```php
+<?php
 namespace App\Spider;
 
 use EasySwoole\HttpClient\HttpClient;
-use EasySwoole\Spider\Hole\ProductInterface;
-use EasySwoole\Spider\Spider;
-use EasySwoole\Spider\Config\ProductResult;
+use EasySwoole\Spider\ConsumeJob;
+use EasySwoole\Spider\Hole\ProductAbstract;
+use EasySwoole\Spider\ProductResult;
+use EasySwoole\Spider\ProductJob;
+use QL\QueryList;
 
-class ProductTest implements ProductInterface
+class ProductTest extends ProductAbstract
 {
 
-    public function product($url):ProductResult
+    private const SEARCH_WORDS = 'SEARCH_WORDS';
+
+    public function init()
+    {
+        // TODO: Implement init() method.
+        $words = [
+            'php',
+            'java',
+            'go'
+        ];
+        foreach ($words as $word) {
+            $this->config->getQueue()->push(self::SEARCH_WORDS, $word);
+        }
+
+        $wd = $this->config->getQueue()->pop(self::SEARCH_WORDS);
+
+        $productJob = new ProductJob();
+        $productJob->setUrl("https://www.baidu.com/s?wd={$wd}&pn=0");
+        $productJob->setOtherInfo(['page'=>0, 'word'=>$wd]);
+        $this->firstProductJob = $productJob;
+    }
+
+    public function product(ProductJob $productJob):ProductResult
     {
         // TODO: Implement product() method.
-        // 通过http协程客户端拿到地址内容
-        $httpClient = new HttpClient($url);
+        // 请求地址数据
+        $httpClient = new HttpClient($productJob->getUrl());
+        $httpClient->setHeader('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.116 Safari/537.36');
         $body = $httpClient->get()->getBody();
-        // 可以借助第三方dom解析，如Querylist
-        $nextUrl = 'xxx';
-        $data = 'xxx';
+
+        // 先将每个搜索结果的a标签内容拿到
+        $rules = [
+            'search_result' => ['.c-container .t', 'text', 'a']
+        ];
+        $searchResult = QueryList::rules($rules)->html($body)->query()->getData();
+
+        $data = [];
+        foreach ($searchResult as $result) {
+            $item = [
+                'href' => QueryList::html($result['search_result'])->find('a')->attr('href'),
+                'text' => QueryList::html($result['search_result'])->find('a')->text()
+            ];
+            $data[] = $item;
+        }
+
+        $productJobOtherInfo = $productJob->getOtherInfo();
+
+        // 下一个任务
+        $nextProductJob = new ProductJob();
+        if ($productJobOtherInfo['page'] === 3) {
+            $word = $this->config->getQueue()->pop(self::SEARCH_WORDS);
+            $pn = 0;
+            $nextOtherInfo = [
+                'page' => 0,
+                'word' => $word
+            ];
+        } else {
+            $word = $productJobOtherInfo['word'];
+            $pn = $productJobOtherInfo['page']*10;
+            $nextOtherInfo = [
+                'page' => ++$productJobOtherInfo['page'],
+                'word' => $word
+            ];
+        }
+
+        $nextProductJob->setUrl("https://www.baidu.com/s?wd={$word}&pn={$pn}");
+        $nextProductJob->setOtherInfo($nextOtherInfo);
+
+        // 消费任务
+        $consumeJob = new ConsumeJob();
+        $consumeJob->setData($data);
+
         $result = new ProductResult();
-        return $result->setNexturl($nextUrl)->setConsumeData($data);
+        $result->setProductJob($nextProductJob)->setConsumeJob($consumeJob);
+        return $result;
     }
+
 }
 ```
 
 ### Consume
 
-实现ConsumeInterface接口
+我这里直接存文件了，可按照需求自己定制
 
 ```php
 namespace App\Spider;
 
-use EasySwoole\Spider\Hole\ConsumeInterface;
+use EasySwoole\Spider\ConsumeJob;
+use EasySwoole\Spider\Hole\ConsumeAbstract;
 
-class ConsumeTest implements ConsumeInterface
+class ConsumeTest extends ConsumeAbstract
 {
 
-    public function consume($data)
+    public function consume(ConsumeJob $consumeJob)
     {
         // TODO: Implement consume() method.
-        $urls = '';
+        $data = $consumeJob->getData();
+
+        $items = '';
         foreach ($data as $item) {
-            if (!empty($item)) {
-                $urls .= $item."\n";
-            }
+            $items .= implode("\t", $item)."\n";
         }
-        file_put_contents('xx.txt', $urls);
+
+        file_put_contents('baidu.txt', $items);
     }
 }
 ```
@@ -65,14 +135,11 @@ class ConsumeTest implements ConsumeInterface
 ```php
 public static function mainServerCreate(EventRegister $register)
 {
-    // TODO: Implement mainServerCreate() method.
     $config = Config::getInstance()
-            ->setStartUrl('https://www.doutula.com/article/detail/1704295') // 爬虫开始地址
-            ->setProduct(new ProductTest()) // 设置生产端
-            ->setConsume(new ConsumeTest()) // 设置消费端
-            ->setProductCoroutineNum(1) // 生产端协程数
-            ->setConsumeCoroutineNum(1); // 消费端协程数
-
+        ->setProduct(new ProductTest())
+        ->setConsume(new ConsumeTest())
+        ->setProductCoroutineNum(1)
+        ->setConsumeCoroutineNum(1);
     Spider::getInstance()
         ->setConfig($config)
         ->attachProcess(ServerManager::getInstance()->getSwooleServer());
@@ -80,11 +147,6 @@ public static function mainServerCreate(EventRegister $register)
 ```
 
 ## 配置
-
-爬虫开始地址
-```php
-    public function setStartUrl($startUrl): Config
-```
 
 设置生产端
 ```php

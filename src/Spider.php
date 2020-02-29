@@ -45,44 +45,33 @@ class Spider
      *
      * @param null|\swoole_server|\swoole_server_port|\swoole_websocket_server|\swoole_http_server $swooleServer
      * CreateTime: 2020/2/22 下午2:45
-     * @return Spider
+     * @return void
+     * @throws \EasySwoole\Component\Process\Exception
+     * @throws \EasySwoole\FastCache\Exception\RuntimeError
      */
     public function attachProcess($swooleServer)
     {
 
-        // 队列
-        try {
-            switch ($this->config->getQueueType()) {
-                case Config::QUEUE_TYPE_FAST_CACHE:
-                    Cache::getInstance()
-                        ->setTempDir(EASYSWOOLE_TEMP_DIR)
-                        ->attachToServer($swooleServer);
-                    $this->config->setQueue(new FastCacheQueue());
-                    break;
-                case Config::QUEUE_TYPE_REDIS:
-                    $queueConfig =  $this->config->getQueueConfig();
-                    if (empty($config)) {
-                        $queueConfig = new RedisConfig();
-                    }
-                    Redis::getInstance()->register(RedisQueue::REDIS_ALIAS, $queueConfig);
-                    $this->config->setQueue(new RedisQueue());
-                    break;
-                case Config::QUEUE_TYPE_RABBITMQ:
-
-                    break;
-                case Config::QUEUE_TYPE_KAFKA:
-
-                    break;
-                default:
-            }
-        } catch (\Exception $e) {
-
+        switch ($this->config->getQueueType()) {
+            case Config::QUEUE_TYPE_FAST_CACHE:
+                Cache::getInstance()
+                    ->setTempDir(EASYSWOOLE_TEMP_DIR)
+                    ->attachToServer($swooleServer);
+                $this->config->setQueue(new FastCacheQueue());
+                break;
+            case Config::QUEUE_TYPE_REDIS:
+                $queueConfig =  $this->config->getQueueConfig();
+                if (empty($queueConfig)) {
+                    $queueConfig = new RedisConfig();
+                }
+                Redis::getInstance()->register(RedisQueue::REDIS_ALIAS, $queueConfig);
+                $this->config->setQueue(new RedisQueue());
+                break;
+            default:
         }
 
-        // 生产者进程
         $swooleServer->addProcess((new ProductProcess())->getProcess());
 
-        // 消费者进程
         $swooleServer->addProcess((new ConsumeProcess())->getProcess());
 
     }

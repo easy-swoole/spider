@@ -9,65 +9,87 @@ namespace EasySwoole\Spider\Process;
 
 use EasySwoole\Component\Process\AbstractProcess;
 use EasySwoole\Spider\Config\Config;
-use EasySwoole\Spider\Config\ProductResult;
+use EasySwoole\Spider\ProductResult;
 use Swoole\Coroutine;
+use EasySwoole\Spider\ProductJob;
+use EasySwoole\Spider\Exception\SpiderException;
 
 class ProductProcess extends AbstractProcess
 {
 
     protected function run($arg)
     {
-        // TODO: Implement run() method.
         go(function (){
 
             $config = Config::getInstance();
 
-            // 区分分布式和单机
-            $mainHost = $config->getMainHost();
-            if (empty($mainHost)) {
-                $config->getQueue()->push($config->getProductQueueKey(), $config->getStartUrl());
-            } else {
-                $ip = gethostbyname(gethostname());
-                if (!empty($ip) && $config->getMainHost() === $ip) {
-                    $config->getQueue()->push($config->getProductQueueKey(), $config->getStartUrl());
-                }
-            }
+            $config->getProduct()->config = $config;
+
+            $config->getProduct()->init();
+
+            $this->setFirstProductJob();
 
             for ($i=0;$i<$config->getProductCoroutineNum();$i++) {
+
                 go(function () use ($config){
+
                     while (true) {
-                        $url = $config->getQueue()->pop($config->getProductQueueKey());
-                        if (empty($url)) {
-                            Coroutine::sleep(0.1);
-                            continue;
+
+                        $productJob = $config->getQueue()->pop($config->getProductQueueKey());
+                        $productJob = unserialize($productJob);
+
+                        if ($productJob instanceof ProductJob) {
+                            $productResult = $config->getProduct()->product($productJob);
+                            $this->productResultDeal($productResult);
+                        } else {
+                            throw new SpiderException('ProductJob type error!');
                         }
 
-                        $productResult = $config->getProduct()->product($url);
-
-                        if ($productResult instanceof ProductResult) {
-
-                            $nextUrls = $productResult->getNextUrls();
-                            if (!empty($nextUrls)) {
-                                foreach ($nextUrls as $nextUrl) {
-                                    Config::getInstance()->getQueue()->push($config->getProductQueueKey(), $nextUrl);
-                                }
-                            }
-
-                            $nextUrl = $productResult->getNexturl();
-                            if (!empty($nextUrl)) {
-                                Config::getInstance()->getQueue()->push($config->getProductQueueKey(), $nextUrl);
-                            }
-
-                            $data = $productResult->getConsumeData();
-                            if (!empty($nextUrl)) {
-                                Config::getInstance()->getQueue()
-                                    ->push($config->getConsumeQueueKey(), json_encode($data, JSON_UNESCAPED_UNICODE));
-                            }
-                        }
                     }
                 });
             }
 
         });
+    }
+
+    private function setFirstProductJob()
+    {
+        $config = Config::getInstance();
+        $mainHost = $config->getMainHost();
+        $firstJob = $config->getProduct()->firstProductJob;
+        if (empty($mainHost)) {
+            if (!empty($firstJob->getUrl())) {
+                $config->getQueue()->push($config->getProductQueueKey(), serialize($firstJob));
+            } else {
+                throw new SpiderException('FirstJob url error!');
+            }
+        } else {
+            $ip = gethostbyname(gethostname());
+            if (!empty($ip) && $config->getMainHost() === $ip) {
+                if (!empty($firstJob->getUrl())) {
+                    $config->getQueue()->push($config->getProductQueueKey(), serialize($firstJob));
+                } else {
+                    throw new SpiderException('FirstJob url error!');
+                }
+            }
+        }
+    }
+
+    private function productResultDeal($productResult)
+    {
+        $config = Config::getInstance();
+        if ($productResult instanceof ProductResult) {
+
+            $productJob = $productResult->getProductJob();
+            if (!empty($productJob->getUrl())) {
+                Config::getInstance()->getQueue()->push($config->getProductQueueKey(), serialize($productJob));
+            }
+
+            $consumeJob = $productResult->getConsumeJob();
+            if (!empty($consumeJob->getData())) {
+                Config::getInstance()->getQueue()
+                    ->push($config->getConsumeQueueKey(), serialize($consumeJob));
+            }
+        }
     }
 }

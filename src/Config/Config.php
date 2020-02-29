@@ -8,8 +8,8 @@
 namespace EasySwoole\Spider\Config;
 
 use EasySwoole\Component\Singleton;
-use EasySwoole\Spider\Hole\ConsumeInterface;
-use EasySwoole\Spider\Hole\ProductInterface;
+use EasySwoole\Spider\Hole\ConsumeAbstract;
+use EasySwoole\Spider\Hole\ProductAbstract;
 use EasySwoole\Spider\Hole\QueueInterface;
 
 class Config
@@ -52,8 +52,6 @@ class Config
 
     public const QUEUE_TYPE_FAST_CACHE = 1;
     public const QUEUE_TYPE_REDIS = 2;
-    public const QUEUE_TYPE_RABBITMQ = 3;
-    public const QUEUE_TYPE_KAFKA = 4;
 
     /**
      * @return mixed
@@ -74,36 +72,36 @@ class Config
     }
 
     /**
-     * @return ProductInterface
+     * @return ProductAbstract
      */
-    public function getProduct():ProductInterface
+    public function getProduct():ProductAbstract
     {
         return $this->product;
     }
 
     /**
-     * @param ProductInterface $product
+     * @param ProductAbstract $product
      * @return Config
      */
-    public function setProduct(ProductInterface $product): Config
+    public function setProduct(ProductAbstract $product): Config
     {
         $this->product = $product;
         return $this;
     }
 
     /**
-     * @return ConsumeInterface
+     * @return ConsumeAbstract
      */
-    public function getConsume():ConsumeInterface
+    public function getConsume():ConsumeAbstract
     {
         return $this->consume;
     }
 
     /**
-     * @param ConsumeInterface $consume
+     * @param ConsumeAbstract $consume
      * @return Config
      */
-    public function setConsume(ConsumeInterface $consume): Config
+    public function setConsume(ConsumeAbstract $consume): Config
     {
         $this->consume = $consume;
         return $this;
