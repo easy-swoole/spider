@@ -9,6 +9,8 @@ namespace EasySwoole\Spider\Process;
 
 use EasySwoole\Component\Process\AbstractProcess;
 use EasySwoole\Spider\Config\Config;
+use EasySwoole\Spider\ConsumeJob;
+use EasySwoole\Spider\Exception\SpiderException;
 use Swoole\Coroutine;
 
 class ConsumeProcess extends AbstractProcess
@@ -16,17 +18,18 @@ class ConsumeProcess extends AbstractProcess
 
     protected function run($arg)
     {
-        // TODO: Implement run() method.
         $config = Config::getInstance();
         for ($i=0;$i<$config->getConsumeCoroutineNum();$i++) {
             go(function () use ($config){
                 while (true) {
-                    $data = $config->getQueue()->pop($config->getConsumeQueueKey());
-                    if (empty($data)) {
-                        Coroutine::sleep(0.1);
-                        continue;
+                    $consumeJob = $config->getQueue()->pop($config->getConsumeQueueKey());
+                    $consumeJob = unserialize($consumeJob);
+
+                    if ($consumeJob instanceof ConsumeJob) {
+                        $config->getConsume()->consume($consumeJob);
+                    } else {
+                        throw new SpiderException('ConsumeJob type error!');
                     }
-                    $config->getConsume()->consume(json_decode($data, true));
                 }
             });
         }

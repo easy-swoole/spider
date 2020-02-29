@@ -3,13 +3,13 @@
  * @CreateTime:   2020/2/16 下午11:02
  * @Author:       huizhang  <tuzisir@163.com>
  * @Copyright:    copyright(2020) Easyswoole all rights reserved
- * @Description:  暴露给外部的生产者接口
+ * @Description:  暴露给外部的消费者接口
  */
 namespace EasySwoole\Spider\Hole;
 
-use EasySwoole\Spider\Config\ProductResult;
+use EasySwoole\Spider\ConsumeJob;
 
-interface ProductInterface
+abstract class ConsumeAbstract
 {
-    public function product($url):ProductResult;
+    abstract public function consume(ConsumeJob $consumeJob);
 }
