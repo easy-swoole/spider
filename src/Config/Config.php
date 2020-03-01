@@ -8,6 +8,7 @@
 namespace EasySwoole\Spider\Config;
 
 use EasySwoole\Component\Singleton;
+use EasySwoole\JobQueue\JobQueueInterface;
 use EasySwoole\Spider\Hole\ConsumeAbstract;
 use EasySwoole\Spider\Hole\ProductAbstract;
 use EasySwoole\Spider\Hole\QueueInterface;
@@ -16,9 +17,6 @@ class Config
 {
 
     use Singleton;
-
-    // 爬虫开始地址
-    protected $startUrl;
 
     // 用户自定义生产者
     protected $product;
@@ -32,17 +30,8 @@ class Config
     // 队列
     protected $queue;
 
-    // 生产者协程数
-    protected $productCoroutineNum=3;
-
-    // 消费者协程数
-    protected $consumeCoroutineNum=3;
-
-    // 生产者队列key(也就是爬出来的地址)
-    protected $productQueueKey='Easyswoole-product';
-
-    // 消费者队列key(爬出来的内容)
-    protected $consumeQueueKey='Easyswoole-consume';
+    // 任务队列key
+    protected $jobQueueKey ='spider-jobkey';
 
     // 分布式时指定一台机器为开始机器
     protected $mainHost;
@@ -50,25 +39,34 @@ class Config
     // 队列配置
     protected $queueConfig;
 
+    // 最大协程数
+    protected $maxCoroutineNum=3;
+
+    // job-queue配置
+    protected $jobQueueProcessConfig;
+
     public const QUEUE_TYPE_FAST_CACHE = 1;
     public const QUEUE_TYPE_REDIS = 2;
 
-    /**
-     * @return mixed
-     */
-    public function getStartUrl()
+    public function setJobQueueProcessConfig(\EasySwoole\Component\Process\Config $config) : Config
     {
-        return $this->startUrl;
+        $this->jobQueueProcessConfig = $config;
+        return $this;
     }
 
-    /**
-     * @param mixed $startUrl
-     * @return Config
-     */
-    public function setStartUrl($startUrl): Config
+    public function getJobQueueProcessConfig()
     {
-        $this->startUrl = $startUrl;
-        return $this;
+        return $this->jobQueueProcessConfig;
+    }
+
+    public function setMaxCoroutineNum($maxCoroutineNum): Config
+    {
+        $this->maxCoroutineNum = $maxCoroutineNum;
+    }
+
+    public function getMaxCoroutineNum()
+    {
+        return $this->maxCoroutineNum;
     }
 
     /**
@@ -126,9 +124,9 @@ class Config
     }
 
     /**
-     * @return QueueInterface
+     * @return JobQueueInterface
      */
-    public function getQueue():QueueInterface
+    public function getQueue():JobQueueInterface
     {
         return $this->queue;
     }
@@ -146,72 +144,18 @@ class Config
     /**
      * @return mixed
      */
-    public function getProductCoroutineNum()
+    public function getJobQueueKey()
     {
-        return $this->productCoroutineNum;
+        return $this->jobQueueKey;
     }
 
     /**
-     * @param mixed $productCoroutineNum
+     * @param mixed $mainHost
      * @return Config
      */
-    public function setProductCoroutineNum($productCoroutineNum): Config
+    public function setJobQueueKey($jobQueueKey): Config
     {
-        $this->productCoroutineNum = $productCoroutineNum;
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getConsumeCoroutineNum()
-    {
-        return $this->consumeCoroutineNum;
-    }
-
-    /**
-     * @param mixed $consumeCoroutineNum
-     * @return Config
-     */
-    public function setConsumeCoroutineNum($consumeCoroutineNum): Config
-    {
-        $this->consumeCoroutineNum = $consumeCoroutineNum;
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getProductQueueKey()
-    {
-        return $this->productQueueKey;
-    }
-
-    /**
-     * @param mixed $productQueueKey
-     * @return Config
-     */
-    public function setProductQueueKey($productQueueKey): Config
-    {
-        $this->productQueueKey = $productQueueKey;
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getConsumeQueueKey()
-    {
-        return $this->consumeQueueKey;
-    }
-
-    /**
-     * @param mixed $consumeQueueKey
-     * @return Config
-     */
-    public function setConsumeQueueKey($consumeQueueKey): Config
-    {
-        $this->consumeQueueKey = $consumeQueueKey;
+        $this->jobQueueKey = $jobQueueKey;
         return $this;
     }
 

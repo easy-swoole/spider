@@ -7,22 +7,38 @@
  */
 namespace EasySwoole\Spider\Queue;
 
+use EasySwoole\Component\Singleton;
 use EasySwoole\FastCache\Cache;
-use EasySwoole\Spider\Hole\QueueInterface;
+use EasySwoole\JobQueue\JobAbstract;
+use EasySwoole\JobQueue\JobQueueInterface;
 
-class FastCacheQueue implements QueueInterface
+class FastCacheQueue implements JobQueueInterface
 {
 
-    public function push($key, $value)
-    {
-        // TODO: Implement push() method.
-        Cache::getInstance()->enQueue($key,$value);
-    }
+    use Singleton;
 
-    public function pop($key)
+    function pop($key): ?JobAbstract
     {
         // TODO: Implement pop() method.
-        return Cache::getInstance()->deQueue($key);
+        $job =  Cache::getInstance()->deQueue($key);
+        if (empty($job)) {
+            return null;
+        }
+        $job = unserialize($job);
+        if (empty($job)) {
+            return null;
+        }
+        return $job;
+    }
+
+    function push($key, JobAbstract $job): bool
+    {
+        // TODO: Implement push() method.
+        $res = Cache::getInstance()->enQueue($key, serialize($job));
+        if (empty($res)) {
+            return false;
+        }
+        return true;
     }
 
 }

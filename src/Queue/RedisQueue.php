@@ -7,26 +7,38 @@
  */
 namespace EasySwoole\Spider\Queue;
 
+use EasySwoole\Component\Singleton;
+use EasySwoole\FastCache\Cache;
 use EasySwoole\RedisPool\Redis;
 use EasySwoole\Spider\Hole\QueueInterface;
 
-class RedisQueue implements QueueInterface
+class RedisQueue implements JobQueueInterface
 {
 
-    public const REDIS_ALIAS='Easyswoole-redis';
+    use Singleton;
 
-    public function push($key, $value)
+    function push($key, JobAbstract $job): bool
     {
-        // TODO: Implement push() method.
-        $redis = Redis::defer(self::REDIS_ALIAS);
-        $redis->lPush($key, $value);
+        $res = $redis = Redis::defer(self::REDIS_ALIAS);
+        $res = $redis->lPush($key, $value);
+        if (empty($res)) {
+            return false;
+        }
+        return true;
     }
 
-    public function pop($key)
+    function pop($key): ?JobAbstract
     {
-        // TODO: Implement pop() method.
         $redis = Redis::defer(self::REDIS_ALIAS);
-        return $redis->lPop($key);
+        $job = $redis->lPop($key);
+        if (empty($job)) {
+            return null;
+        }
+        $job = unserialize($job);
+        if (empty($job)) {
+            return null;
+        }
+        return $job;
     }
 
 }
