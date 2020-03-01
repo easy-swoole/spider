@@ -18,7 +18,10 @@
   ],
   "require": {
     "php": ">=7.1.0",
-    "easyswoole/component": "^2.0"
+    "easyswoole/component": "^2.0",
+    "easyswoole/job-queue": "^1.0",
+    "easyswoole/fast-cache": "^1.0",
+    "easyswoole/spl": "^1.1"
   },
   "require-dev": {
     "easyswoole/phpunit": "^1.0",
