@@ -104,7 +104,7 @@ class Spider extends AbstractProcess
                 if (empty($queueConfig)) {
                     $queueConfig = new RedisConfig();
                 }
-                Redis::getInstance()->register(RedisQueue::REDIS_ALIAS, $queueConfig);
+                Redis::getInstance()->register($this->config->getJobQueueKey(), $queueConfig);
                 $this->config->setQueue(new RedisQueue());
                 break;
             default:

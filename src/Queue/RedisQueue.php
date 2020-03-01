@@ -10,7 +10,8 @@ namespace EasySwoole\Spider\Queue;
 use EasySwoole\Component\Singleton;
 use EasySwoole\FastCache\Cache;
 use EasySwoole\RedisPool\Redis;
-use EasySwoole\Spider\Hole\QueueInterface;
+use EasySwoole\JobQueue\JobQueueInterface;
+use EasySwoole\JobQueue\JobAbstract;
 
 class RedisQueue implements JobQueueInterface
 {
@@ -19,8 +20,8 @@ class RedisQueue implements JobQueueInterface
 
     function push($key, JobAbstract $job): bool
     {
-        $res = $redis = Redis::defer(self::REDIS_ALIAS);
-        $res = $redis->lPush($key, $value);
+        $res = $redis = Redis::defer($key);
+        $res = $redis->lPush($key, serialize($job));
         if (empty($res)) {
             return false;
         }
@@ -29,7 +30,7 @@ class RedisQueue implements JobQueueInterface
 
     function pop($key): ?JobAbstract
     {
-        $redis = Redis::defer(self::REDIS_ALIAS);
+        $redis = Redis::defer($key);
         $job = $redis->lPop($key);
         if (empty($job)) {
             return null;
