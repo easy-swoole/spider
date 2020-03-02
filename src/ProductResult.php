@@ -9,35 +9,36 @@
 namespace EasySwoole\Spider;
 
 use EasySwoole\Spider\ConsumeJob;
+use EasySwoole\Spider\Hole\ProductAbstract;
 use EasySwoole\Spider\ProductJob;
 
 class ProductResult
 {
 
-    private $productJob;
+    private $productJobs;
 
-    private $consumeJob;
+    private $consumeData;
 
-    public function setProductJob(ProductJob $productJob): ProductResult
+    public function setProductJobConfigs(array $productJobs): ProductResult
     {
-        $this->productJob = $productJob;
+        $this->productJobs = $productJobs;
         return $this;
     }
 
-    public function getProductJob() : ProductJob
+    public function getProductJobConfigs()
     {
-        return $this->productJob;
+        return $this->productJobs;
     }
 
-    public function setConsumeJob(ConsumeJob $consumJob): ProductResult
+    public function setConsumeData($consumeData): ProductResult
     {
-        $this->consumeJob = $consumJob;
+        $this->consumeData = $consumeData;
         return $this;
     }
 
-    public function getConsumeJob() : ConsumeJob
+    public function getConsumeData()
     {
-        return $this->consumeJob;
+        return $this->consumeData;
     }
 
 }

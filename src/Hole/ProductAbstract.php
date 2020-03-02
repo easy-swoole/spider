@@ -7,25 +7,69 @@
  */
 namespace EasySwoole\Spider\Hole;
 
-use EasySwoole\Spider\Config\Config;
+use EasySwoole\JobQueue\JobAbstract;
+use EasySwoole\JobQueue\JobProcess;
+use EasySwoole\Spider\Config\ProductConfig;
 use EasySwoole\Spider\ProductResult;
 use EasySwoole\Spider\ProductJob;
+use Swoole\Coroutine;
+use EasySwoole\Spider\Config\Config;
 
-abstract class ProductAbstract
+abstract class ProductAbstract extends JobAbstract
 {
 
     /**
-     * @var $config Config
+     * @var $productConfig ProductConfig
      */
-    public $config;
-
-    /**
-     * @var $firstProductJob ProductJob
-     */
-    public $firstProductJob;
+    public $productConfig;
 
     abstract public function init();
 
-    abstract public function product(ProductJob $productJob):ProductResult;
+    abstract public function product(): ProductResult;
+
+    public function exec(): bool
+    {
+        // TODO: Implement exec() method.
+        $productResult = $this->product();
+        $this->productResultDeal($productResult);
+        return true;
+    }
+
+    private function productResultDeal($productResult)
+    {
+
+        if ($productResult instanceof ProductResult) {
+
+            go(function () use($productResult) {
+                $productJobConfigs = $productResult->getProductJobConfigs();
+                if (!empty($productJobConfigs)) {
+                    $config = Config::getInstance();
+                    foreach ($productJobConfigs as $productJobConfig) {
+                        $productConfig = new ProductConfig($productJobConfig);
+                        $config->getProduct()->productConfig = $productConfig;
+                        $config->getQueue()->push($config->getJobQueueKey(), $config->getProduct());
+                    }
+                }
+            });
+
+            go(function () use($productResult) {
+                $consumeData = $productResult->getConsumeData();
+                if (!empty($consumeData)) {
+                    $config = Config::getInstance();
+                    $config->getConsume()->data = $consumeData;
+                    $config->getQueue()
+                        ->push($config->getJobQueueKey(), $config->getConsume());
+                }
+            });
+        }
+
+    }
+
+    function onException(\Throwable $throwable): bool
+    {
+        // TODO: Implement onException() method.
+
+        return true;
+    }
 
 }
