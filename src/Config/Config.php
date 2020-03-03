@@ -37,7 +37,7 @@ class Config
     protected $queueConfig;
 
     // 同时运行的最大任务数量(生产+消费)
-    protected $maxCurrency=10;
+    protected $maxCurrency=128;
 
 
     public const QUEUE_TYPE_FAST_CACHE = 1;
