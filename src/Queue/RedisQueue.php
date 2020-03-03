@@ -9,29 +9,31 @@ namespace EasySwoole\Spider\Queue;
 
 use EasySwoole\Component\Singleton;
 use EasySwoole\FastCache\Cache;
+use EasySwoole\JobQueue\AbstractJob;
+use EasySwoole\JobQueue\QueueDriverInterface;
 use EasySwoole\RedisPool\Redis;
-use EasySwoole\JobQueue\JobQueueInterface;
-use EasySwoole\JobQueue\JobAbstract;
 
-class RedisQueue implements JobQueueInterface
+class RedisQueue implements QueueDriverInterface
 {
 
     use Singleton;
 
-    function push($key, JobAbstract $job): bool
+    public const REDIS_JOB_QUEUE_KEY='REDIS_JOB_QUEUE_KEY';
+
+    function push(AbstractJob $job):bool
     {
-        $res = $redis = Redis::defer($key);
-        $res = $redis->lPush($key, serialize($job));
+        $redis = Redis::defer(self::REDIS_JOB_QUEUE_KEY);
+        $res = $redis->lPush(self::REDIS_JOB_QUEUE_KEY, serialize($job));
         if (empty($res)) {
             return false;
         }
         return true;
     }
 
-    function pop($key): ?JobAbstract
+    function pop(float $timeout = 3):?AbstractJob
     {
-        $redis = Redis::defer($key);
-        $job = $redis->lPop($key);
+        $redis = Redis::defer(self::REDIS_JOB_QUEUE_KEY);
+        $job = $redis->lPop(self::REDIS_JOB_QUEUE_KEY);
         if (empty($job)) {
             return null;
         }

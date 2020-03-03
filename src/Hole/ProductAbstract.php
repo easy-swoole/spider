@@ -7,7 +7,7 @@
  */
 namespace EasySwoole\Spider\Hole;
 
-use EasySwoole\JobQueue\JobAbstract;
+use EasySwoole\JobQueue\AbstractJob;
 use EasySwoole\JobQueue\JobProcess;
 use EasySwoole\Spider\Config\ProductConfig;
 use EasySwoole\Spider\ProductResult;
@@ -15,7 +15,7 @@ use EasySwoole\Spider\ProductJob;
 use Swoole\Coroutine;
 use EasySwoole\Spider\Config\Config;
 
-abstract class ProductAbstract extends JobAbstract
+abstract class ProductAbstract extends AbstractJob
 {
 
     /**
@@ -47,7 +47,7 @@ abstract class ProductAbstract extends JobAbstract
                     foreach ($productJobConfigs as $productJobConfig) {
                         $productConfig = new ProductConfig($productJobConfig);
                         $config->getProduct()->productConfig = $productConfig;
-                        $config->getQueue()->push($config->getJobQueueKey(), $config->getProduct());
+                        $config->getQueue()->push($config->getProduct());
                     }
                 }
             });
@@ -58,7 +58,7 @@ abstract class ProductAbstract extends JobAbstract
                     $config = Config::getInstance();
                     $config->getConsume()->data = $consumeData;
                     $config->getQueue()
-                        ->push($config->getJobQueueKey(), $config->getConsume());
+                        ->push($config->getConsume());
                 }
             });
         }

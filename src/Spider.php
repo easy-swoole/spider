@@ -12,6 +12,7 @@ use EasySwoole\Component\Singleton;
 use EasySwoole\EasySwoole\ServerManager;
 use EasySwoole\FastCache\Cache;
 use EasySwoole\JobQueue\JobProcess;
+use EasySwoole\JobQueue\JobQueue;
 use EasySwoole\Redis\Config\RedisConfig;
 use EasySwoole\RedisPool\Redis;
 use EasySwoole\Spider\Config\Config;
@@ -29,6 +30,8 @@ class Spider extends AbstractProcess
      * @var $config Config
      */
     private $config;
+
+    private const ES_SPIDER_JOB_QUEUE='ES_SPIDER_JOB_QUEUE';
 
     /**
      * 设置配置
@@ -63,7 +66,7 @@ class Spider extends AbstractProcess
         $firstJob = $config->getProduct();
         if (empty($mainHost)) {
             if (!empty($firstJob->productConfig->getUrl())) {
-                $config->getQueue()->push($config->getJobQueueKey(), $firstJob);
+                $config->getQueue()->push($firstJob);
             } else {
                 throw new SpiderException('FirstJob url error!');
             }
@@ -71,7 +74,7 @@ class Spider extends AbstractProcess
             $ip = gethostbyname(gethostname());
             if (!empty($ip) && $config->getMainHost() === $ip) {
                 if (!empty($firstJob->productConfig->getUrl())) {
-                    $config->getQueue()->push($config->getJobQueueKey(), $firstJob);
+                    $config->getQueue()->push($firstJob);
                 } else {
                     throw new SpiderException('FirstJob url error!');
                 }
@@ -104,7 +107,7 @@ class Spider extends AbstractProcess
                 if (empty($queueConfig)) {
                     $queueConfig = new RedisConfig();
                 }
-                Redis::getInstance()->register($this->config->getJobQueueKey(), $queueConfig);
+                Redis::getInstance()->register(RedisQueue::REDIS_JOB_QUEUE_KEY, $queueConfig);
                 $this->config->setQueue(new RedisQueue());
                 break;
             default:
@@ -113,21 +116,9 @@ class Spider extends AbstractProcess
         // 将spider绑定到主进程
         $swooleServer->addProcess($this->getProcess());
 
-        // Job-queue 组件配置
-        if (empty($this->config->getJobQueueProcessConfig())) {
-            $jobQueueProcessConfig = new \EasySwoole\Component\Process\Config();
-            $jobQueueProcessConfig->setProcessName('SpiderJobQueue');
-        } else {
-            $jobQueueProcessConfig = $this->config->getJobQueueProcessConfig();
-        }
-
-        $jobQueueProcessConfig->setArg([
-            'queue' => $this->config->getQueue(),
-            'maxCurrency' => $this->config->getMaxCoroutineNum(),
-            'jobKey' => $this->config->getJobQueueKey()
-        ]);
-
-        $swooleServer->addProcess((new JobProcess($jobQueueProcessConfig))->getProcess());
+        $jobQueue = new JobQueue($this->config->getQueue());
+        $jobQueue->setMaxCurrency($this->config->getMaxCurrency());
+        $jobQueue->attachServer($swooleServer);
 
     }
 
