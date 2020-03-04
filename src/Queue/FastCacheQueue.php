@@ -9,18 +9,21 @@ namespace EasySwoole\Spider\Queue;
 
 use EasySwoole\Component\Singleton;
 use EasySwoole\FastCache\Cache;
+use EasySwoole\JobQueue\AbstractJob;
 use EasySwoole\JobQueue\JobAbstract;
-use EasySwoole\JobQueue\JobQueueInterface;
+use EasySwoole\JobQueue\QueueDriverInterface;
 
-class FastCacheQueue implements JobQueueInterface
+class FastCacheQueue implements QueueDriverInterface
 {
 
     use Singleton;
 
-    function pop($key): ?JobAbstract
+    private const FASTCACHE_JOB_QUEUE_KEY='FASTCACHE_JOB_QUEUE_KEY';
+
+    function pop(float $timeout = 3):?AbstractJob
     {
         // TODO: Implement pop() method.
-        $job =  Cache::getInstance()->deQueue($key);
+        $job =  Cache::getInstance()->deQueue(self::FASTCACHE_JOB_QUEUE_KEY);
         if (empty($job)) {
             return null;
         }
@@ -31,10 +34,10 @@ class FastCacheQueue implements JobQueueInterface
         return $job;
     }
 
-    function push($key, JobAbstract $job): bool
+    function push(AbstractJob $job):bool
     {
         // TODO: Implement push() method.
-        $res = Cache::getInstance()->enQueue($key, serialize($job));
+        $res = Cache::getInstance()->enQueue(self::FASTCACHE_JOB_QUEUE_KEY, serialize($job));
         if (empty($res)) {
             return false;
         }

@@ -179,32 +179,13 @@ public static function mainServerCreate(EventRegister $register)
     public function setMainHost($mainHost): Config
 ```
 
-设置job-queue组件的队列key
-
-```php
-    public function setJobQueueKey($jobQueueKey): Config
-```
-
-
 设置自定义队列配置(现在只有redis-pool需要这个方法)
 
 ```php
     public function setJobQueueKey($jobQueueKey): Config
 ```
 
-设置job-queue进程配置
-
+最大可运行任务数
 ```php
-    public function setJobQueueProcessConfig(\EasySwoole\Component\Process\Config $config) : Config
+    public function setMaxCurrency($maxCurrency): Config
 ```
-
-设置最大协程数量(生产+消费总共)
-
-```php
-    public function setMaxCoroutineNum($maxCoroutineNum): Config
-```
-
-
-
-
-

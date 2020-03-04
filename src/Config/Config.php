@@ -8,7 +8,7 @@
 namespace EasySwoole\Spider\Config;
 
 use EasySwoole\Component\Singleton;
-use EasySwoole\JobQueue\JobQueueInterface;
+use EasySwoole\JobQueue\QueueDriverInterface;
 use EasySwoole\Spider\Hole\ConsumeAbstract;
 use EasySwoole\Spider\Hole\ProductAbstract;
 use EasySwoole\Spider\Hole\QueueInterface;
@@ -30,43 +30,27 @@ class Config
     // 队列
     protected $queue;
 
-    // 任务队列key
-    protected $jobQueueKey ='spider-jobkey';
-
     // 分布式时指定一台机器为开始机器
     protected $mainHost;
 
     // 队列配置
     protected $queueConfig;
 
-    // 最大协程数
-    protected $maxCoroutineNum=3;
+    // 同时运行的最大任务数量(生产+消费)
+    protected $maxCurrency=128;
 
-    // job-queue配置
-    protected $jobQueueProcessConfig;
 
     public const QUEUE_TYPE_FAST_CACHE = 1;
     public const QUEUE_TYPE_REDIS = 2;
 
-    public function setJobQueueProcessConfig(\EasySwoole\Component\Process\Config $config) : Config
+    public function setMaxCurrency($maxCurrency): Config
     {
-        $this->jobQueueProcessConfig = $config;
-        return $this;
+        $this->maxCurrency = $maxCurrency;
     }
 
-    public function getJobQueueProcessConfig()
+    public function getMaxCurrency()
     {
-        return $this->jobQueueProcessConfig;
-    }
-
-    public function setMaxCoroutineNum($maxCoroutineNum): Config
-    {
-        $this->maxCoroutineNum = $maxCoroutineNum;
-    }
-
-    public function getMaxCoroutineNum()
-    {
-        return $this->maxCoroutineNum;
+        return $this->maxCurrency;
     }
 
     /**
@@ -124,9 +108,9 @@ class Config
     }
 
     /**
-     * @return JobQueueInterface
+     * @return QueueDriverInterface
      */
-    public function getQueue():JobQueueInterface
+    public function getQueue():QueueDriverInterface
     {
         return $this->queue;
     }
@@ -138,24 +122,6 @@ class Config
     public function setQueue($queue): Config
     {
         $this->queue = $queue;
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getJobQueueKey()
-    {
-        return $this->jobQueueKey;
-    }
-
-    /**
-     * @param mixed $mainHost
-     * @return Config
-     */
-    public function setJobQueueKey($jobQueueKey): Config
-    {
-        $this->jobQueueKey = $jobQueueKey;
         return $this;
     }
 

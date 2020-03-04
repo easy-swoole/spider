@@ -7,9 +7,9 @@
  */
 namespace EasySwoole\Spider\Hole;
 
-use EasySwoole\JobQueue\JobAbstract;
+use EasySwoole\JobQueue\AbstractJob;
 
-abstract class ConsumeAbstract extends JobAbstract
+abstract class ConsumeAbstract extends AbstractJob
 {
 
     public $data;
