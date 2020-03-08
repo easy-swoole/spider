@@ -8,10 +8,6 @@
 
 namespace EasySwoole\Spider;
 
-use EasySwoole\Spider\ConsumeJob;
-use EasySwoole\Spider\Hole\ProductAbstract;
-use EasySwoole\Spider\ProductJob;
-
 class ProductResult
 {
 

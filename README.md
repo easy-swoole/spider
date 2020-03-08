@@ -22,32 +22,6 @@ use EasySwoole\FastCache\Cache;
 class ProductTest extends ProductAbstract
 {
 
-    private const SEARCH_WORDS = 'SEARCH_WORDS';
-
-    public function init()
-    {
-        // TODO: Implement init() method.
-        $words = [
-            'php',
-            'java',
-            'go'
-        ];
-
-        foreach ($words as $word) {
-            Cache::getInstance()->enQueue(self::SEARCH_WORDS, $word);
-        }
-
-        $wd = Cache::getInstance()->deQueue(self::SEARCH_WORDS);
-
-        return [
-            'url' => "https://www.baidu.com/s?wd={$wd}&pn=0",
-            'otherInfo' => [
-                'page' => 1,
-                'word' => $wd
-            ]
-        ];
-    }
-
     public function product():ProductResult
     {
         // TODO: Implement product() method.
@@ -126,7 +100,7 @@ class ConsumeTest extends ConsumeAbstract
     public function consume()
     {
         // TODO: Implement consume() method.
-        $data = $this->data;
+        $data = $this->getJobData();
 
         $items = '';
         foreach ($data as $item) {
@@ -143,49 +117,39 @@ class ConsumeTest extends ConsumeAbstract
 ```php
 public static function mainServerCreate(EventRegister $register)
 {
-    $config = Config::getInstance()
-        ->setProduct(new ProductTest())
-        ->setConsume(new ConsumeTest());
-    Spider::getInstance()
-        ->setConfig($config)
-        ->attachProcess(ServerManager::getInstance()->getSwooleServer());
+        $spiderConfig = [
+            'product' => ProductTest::class, // 必须
+            'consume' => ConsumeTest::class, // 必须
+            'queueType' => SpiderConfig::QUEUE_TYPE_FAST_CACHE,
+            'queue' => '自定义队列，如使用组件自带则不需要',
+            'queueConfig' => '自定义队列配置，目前只有SpiderConfig::QUEUE_TYPE_REDIS需要',
+            'maxCurrency' => 128 // 最大协程并发数
+        ];
+        SpiderServer::getInstance()
+            ->setSpiderConfig($spiderConfig)
+            ->attachProcess(ServerManager::getInstance()->getSwooleServer());
 }
 ```
 
-## 配置
+### 投递任务
+````php
+$words = [
+    'php',
+    'java',
+    'go'
+];
 
-设置生产端
-```php
-    public function setProduct(ProductInterface $product): Config
-```
+foreach ($words as $word) {
+    Cache::getInstance()->enQueue('SEARCH_WORDS', $word);
+}
 
-设置消费端
-```php
-    public function setConsume(ConsumeInterface $consume): Config
-```
+$wd = Cache::getInstance()->deQueue('SEARCH_WORDS');
 
-设置队列类型
-```php
-    public function setQueueType($queueType): Config
-```
-
-设置自定义队列
-```php
-    public function setQueue($queue): Config
-```
-
-分布式时指定某台机器为开始机
-```php
-    public function setMainHost($mainHost): Config
-```
-
-设置自定义队列配置(现在只有redis-pool需要这个方法)
-
-```php
-    public function setJobQueueKey($jobQueueKey): Config
-```
-
-最大可运行任务数
-```php
-    public function setMaxCurrency($maxCurrency): Config
-```
+SpiderClient::getInstance()->addJob(
+                'https://www.baidu.com/s?wd=php&pn=0',
+                [
+                    'page' => 1,
+                    'word' => $wd
+                ]
+);
+````

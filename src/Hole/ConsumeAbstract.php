@@ -7,25 +7,11 @@
  */
 namespace EasySwoole\Spider\Hole;
 
-use EasySwoole\JobQueue\AbstractJob;
+use EasySwoole\Queue\Job;
 
-abstract class ConsumeAbstract extends AbstractJob
+abstract class ConsumeAbstract extends Job
 {
 
-    public $data;
-
     abstract public function consume();
-
-    function exec(): bool
-    {
-        // TODO: Implement exec() method.
-        $this->consume();
-    }
-
-    function onException(\Throwable $throwable): bool
-    {
-        // TODO: Implement onException() method.
-        return true;
-    }
 
 }
