@@ -30,7 +30,7 @@ class SpiderServer extends AbstractProcess
 
     public function __construct(...$args)
     {
-        parent::__construct($args);
+        parent::__construct(...$args);
         libxml_use_internal_errors(true);
     }
 
